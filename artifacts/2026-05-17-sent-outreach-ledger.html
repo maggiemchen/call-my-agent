@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sent Outreach Ledger</title>
+  <style>
+    :root { color-scheme: dark; --bg:#090908; --ink:#f7f0df; --muted:#aaa394; --line:#2b2821; --gold:#d6b05b; --panel:#11100d; }
+    * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--ink); font-family:Inter, system-ui, sans-serif; }
+    .shell { display:grid; grid-template-columns:280px 1fr; min-height:100vh; }
+    aside { position:sticky; top:0; height:100vh; border-right:1px solid var(--line); padding:28px 22px; background:#0d0c0a; }
+    main { padding:40px clamp(24px,5vw,72px) 80px; }
+    h1,h2 { font-family:Newsreader, Georgia, serif; font-weight:500; margin:0; letter-spacing:0; }
+    h1 { font-size:64px; line-height:.95; max-width:850px; } h2 { font-size:28px; }
+    p { color:var(--muted); line-height:1.5; }
+    .brand { font-family:Newsreader, Georgia, serif; font-size:26px; line-height:1; }
+    .kicker,.meta { color:var(--gold); text-transform:uppercase; font-size:12px; letter-spacing:.16em; margin-bottom:12px; }
+    .card { border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:20px; margin:18px 0; }
+    pre { white-space:pre-wrap; word-break:break-word; background:#080807; border:1px solid var(--line); border-radius:8px; padding:16px; color:#ddd4c0; line-height:1.45; }
+    @media (max-width:900px) { .shell { grid-template-columns:1fr; } aside { position:relative; height:auto; } h1 { font-size:44px; } }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand">Life Ops<br>Concierge</div>
+    <p>Exact outbound email text reconstructed from the scripts that sent the messages, plus DB message/thread IDs.</p>
+  </aside>
+  <main>
+    <div class="kicker">Audit trail</div>
+    <h1>Sent outreach ledger.</h1>
+    <p>Every card below is an external email that has been sent or whose sent state is recorded in the local provider queue.</p>
+    
+            <article class="card">
+              <div class="meta">sf_chores</div>
+              <h2>ARXA Studio</h2>
+              <p><strong>To:</strong> hotmessmethod@gmail.com</p>
+              <p><strong>Status:</strong> sent</p>
+              <p><strong>Message ID / thread:</strong> email sent: {&quot;message_id&quot;: &quot;&lt;0100019e3841889d-ae773ba7-41a0-4e23-b240-6f1fba12d1df-000000@email.amazonses.com&gt;&quot;, &quot;thread_id&quot;: &quot;8fe3fc07-bb0a-4fa9-aa5c-c2bc45a60344&quot;}</p>
+              <pre>Hi ARXA Studio team,
+
+I&#x27;m looking for help in a 1BR apartment in 94109. The scope is kitchen and closet organizing, light declutter, some cleaning support, and possibly healthy meal plan / grocery support.
+
+Weekdays after 3pm are best. For the first session, I am trying to keep it to $50-80/hour and $300 max. Could you let me know whether this is a fit, any availability this week or next, and the best next step?
+
+Please do not book anything yet; I am just checking fit and availability.
+
+Thank you,
+Maggie
+</pre>
+            </article>
+            
+            <article class="card">
+              <div class="meta">sf_chores</div>
+              <h2>Artful Organizing SF</h2>
+              <p><strong>To:</strong> ArtfulOrganizingSf@gmail.com</p>
+              <p><strong>Status:</strong> sent</p>
+              <p><strong>Message ID / thread:</strong> {&quot;durationSeconds&quot;: 11.63, &quot;disconnectionReason&quot;: &quot;voicemail_reached&quot;, &quot;transcript&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Hello. &quot;}, {&quot;role&quot;: &quot;agent&quot;, &quot;content&quot;: &quot;Hi, this &quot;}, {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;This is Andrea. Please leave a message, and I will get back to you as soon as I can. Thanks. &quot;}, {&quot;role&quot;: &quot;agent&quot;, &quot;content&quot;: &quot;Hi, this is Maggie&#x27;s call agent. I am calling on her behalf and will text a concise follow-up. Thank you.&quot;}]}</p>
+              <pre>Hi Artful Organizing SF team,
+
+I&#x27;m looking for help in a 1BR apartment in 94109. The scope is kitchen and closet organizing, light declutter, some cleaning support, and possibly healthy meal plan / grocery support.
+
+Weekdays after 3pm are best. For the first session, I am trying to keep it to $50-80/hour and $300 max. Could you let me know whether this is a fit, any availability this week or next, and the best next step?
+
+Please do not book anything yet; I am just checking fit and availability.
+
+Thank you,
+Maggie
+</pre>
+            </article>
+            
+            <article class="card">
+              <div class="meta">sf_chores</div>
+              <h2>Bay Area Home Organizing</h2>
+              <p><strong>To:</strong> bahomeorganizing@gmail.com</p>
+              <p><strong>Status:</strong> sent</p>
+              <p><strong>Message ID / thread:</strong> {&quot;durationSeconds&quot;: 20.37, &quot;disconnectionReason&quot;: &quot;user_hangup&quot;, &quot;transcript&quot;: [{&quot;role&quot;: &quot;agent&quot;, &quot;content&quot;: &quot;Hi, this &quot;}, {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Hello? &quot;}, {&quot;role&quot;: &quot;agent&quot;, &quot;content&quot;: &quot;is an AI call agent calling on behalf of Maggie. I am calling about closet organizing, light declutter, cleaning support, and possibly healthy meal plan/grocery support. Weekdays after 3pm are best. Budget is $50-80/hour and $300 max for the first session. Do not book, pay, or commit. Is now &quot;}]}</p>
+              <pre>Hi Bay Area Home Organizing team,
+
+I&#x27;m looking for help in a 1BR apartment in 94109. The scope is kitchen and closet organizing, light declutter, some cleaning support, and possibly healthy meal plan / grocery support.
+
+Weekdays after 3pm are best. For the first session, I am trying to keep it to $50-80/hour and $300 max. Could you let me know whether this is a fit, any availability this week or next, and the best next step?
+
+Please do not book anything yet; I am just checking fit and availability.
+
+Thank you,
+Maggie
+</pre>
+            </article>
+            
+            <article class="card">
+              <div class="meta">sf_chores</div>
+              <h2>Clean Cozy Home</h2>
+              <p><strong>To:</strong> info@cleancozyhome.com</p>
+              <p><strong>Status:</strong> sent</p>
+              <p><strong>Message ID / thread:</strong> email sent: {&quot;message_id&quot;: &quot;&lt;0100019e384183f8-c39e1b51-5dca-462b-a6b8-e3afb598acd4-000000@email.amazonses.com&gt;&quot;, &quot;thread_id&quot;: &quot;b507a6f9-8a32-4e83-aee7-350257d5880f&quot;}</p>
+              <pre>Hi Clean Cozy Home team,
+
+I&#x27;m looking for help in a 1BR apartment in 94109. The scope is kitchen and closet organizing, light declutter, some cleaning support, and possibly healthy meal plan / grocery support.
+
+Weekdays after 3pm are best. For the first session, I am trying to keep it to $50-80/hour and $300 max. Could you let me know whether this is a fit, any availability this week or next, and the best next step?
+
+Please do not book anything yet; I am just checking fit and availability.
+
+Thank you,
+Maggie
+</pre>
+            </article>
+            
+            <article class="card">
+              <div class="meta">sf_chores</div>
+              <h2>Clean Lines Home Organizing</h2>
+              <p><strong>To:</strong> info@cleanlinesmarin.com</p>
+              <p><strong>Status:</strong> sent</p>
+              <p><strong>Message ID / thread:</strong> email sent: {&quot;message_id&quot;: &quot;&lt;0100019e38417f8e-5f6be1f5-bb55-4fda-b931-4c77418c7099-000000@email.amazonses.com&gt;&quot;, &quot;thread_id&quot;: &quot;027a8219-2183-4bb8-9bf0-7f28286bf284&quot;}</p>
+              <pre>Hi Clean Lines Home Organizing team,
+
+I&#x27;m looking for help in a 1BR apartment in 94109. The scope is kitchen and closet organizing, light declutter, some cleaning support, and possibly healthy meal plan / grocery support.
+
+Weekdays after 3pm are best. For the first session, I am trying to keep it to $50-80/hour and $300 max. Could you let me know whether this is a fit, any availability this week or next, and the best next step?
+
+Please do not book anything yet; I am just checking fit and availability.
+
+Thank you,
+Maggie
+</pre>
+            </article>
+            
+            <article class="card">
+              <div class="meta">sf_chores</div>
+              <h2>Cleverly Curated</h2>
+              <p><strong>To:</strong> hello@thecleverlycurated.com</p>
+              <p><strong>Status:</strong> sent</p>
+              <p><strong>Message ID / thread:</strong> email sent: {&quot;message_id&quot;: &quot;&lt;0100019e384181a1-10023e41-4004-4547-9355-9c8b82a5189c-000000@email.amazonses.com&gt;&quot;, &quot;thread_id&quot;: &quot;363c47de-7744-444e-9563-fb4529a394c0&quot;}</p>
+              <pre>Hi Cleverly Curated team,
+
+I&#x27;m looking for help in a 1BR apartment in 94109. The scope is kitchen and closet organizing, light declutter, some cleaning support, and possibly healthy meal plan / grocery support.
+
+Weekdays after 3pm are best. For the first session, I am trying to keep it to $50-80/hour and $300 max. Could you let me know whether this is a fit, any availability this week or next, and the best next step?
+
+Please do not book anything yet; I am just checking fit and availability.
+
+Thank you,
+Maggie
+</pre>
+            </article>
+            
+            <article class="card">
+              <div class="meta">sf_chores</div>
+              <h2>Liberated Spaces</h2>
+              <p><strong>To:</strong> info@liberatedspaces.com</p>
+              <p><strong>Status:</strong> sent</p>
+              <p><strong>Message ID / thread:</strong> {&quot;durationSeconds&quot;: 28.56, &quot;disconnectionReason&quot;: &quot;voicemail_reached&quot;, &quot;transcript&quot;: [{&quot;role&quot;: &quot;agent&quot;, &quot;content&quot;: &quot;Hi, this is &quot;}, {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Thank you &quot;}, {&quot;role&quot;: &quot;agent&quot;, &quot;content&quot;: &quot;an AI &quot;}, {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;for calling. This is Deb, and the voice mail for Liberated Spaces &quot;}, {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Please feel free to leave a message after the tone. And if you want more information about my services, I invite you to visit my website liberated spaces dot com. &quot;}, {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Thanks very much for your inquiry, and I look forward to talking with you soon. &quot;}, {&quot;role&quot;: &quot;agent&quot;, &quot;content&quot;: &quot;Hi, this is Maggie&#x27;s call agent. I am calling on her behalf and will text a concise follow-up. Thank you.&quot;}]}</p>
+              <pre>Hi Liberated Spaces team,
+
+I&#x27;m looking for help in a 1BR apartment in 94109. The scope is kitchen and closet organizing, light declutter, some cleaning support, and possibly healthy meal plan / grocery support.
+
+Weekdays after 3pm are best. For the first session, I am trying to keep it to $50-80/hour and $300 max. Could you let me know whether this is a fit, any availability this week or next, and the best next step?
+
+Please do not book anything yet; I am just checking fit and availability.
+
+Thank you,
+Maggie
+</pre>
+            </article>
+            
+            <article class="card">
+              <div class="meta">sf_chores</div>
+              <h2>NEATNIK</h2>
+              <p><strong>To:</strong> info@neatnik.co</p>
+              <p><strong>Status:</strong> sent</p>
+              <p><strong>Message ID / thread:</strong> email sent: {&quot;message_id&quot;: &quot;&lt;0100019e383e6a49-c8521251-4699-4559-b20b-f5fade7642f4-000000@email.amazonses.com&gt;&quot;, &quot;thread_id&quot;: &quot;34f80f92-3529-4e32-ae26-f7b566e217c3&quot;}</p>
+              <pre>Hi NEATNIK team,
+
+I&#x27;m looking for help in a 1BR apartment in 94109. The scope is kitchen and closet organizing, light declutter, some cleaning support, and possibly healthy meal plan / grocery support.
+
+Weekdays after 3pm are best. For the first session, I am trying to keep it to $50-80/hour and $300 max. Could you let me know whether this is a fit, any availability this week or next, and the best next step?
+
+Please do not book anything yet; I am just checking fit and availability.
+
+Thank you,
+Maggie
+</pre>
+            </article>
+            
+            <article class="card">
+              <div class="meta">sf_chores</div>
+              <h2>Zenfully Organized</h2>
+              <p><strong>To:</strong> info@zenfullyorganized.com</p>
+              <p><strong>Status:</strong> sent</p>
+              <p><strong>Message ID / thread:</strong> email sent: {&quot;message_id&quot;: &quot;&lt;0100019e38418673-283de94f-56af-4e67-aa3e-7d6a5b57255a-000000@email.amazonses.com&gt;&quot;, &quot;thread_id&quot;: &quot;cde6193d-d758-4858-b133-6af0fbdec1c1&quot;}</p>
+              <pre>Hi Zenfully Organized team,
+
+I&#x27;m looking for help in a 1BR apartment in 94109. The scope is kitchen and closet organizing, light declutter, some cleaning support, and possibly healthy meal plan / grocery support.
+
+Weekdays after 3pm are best. For the first session, I am trying to keep it to $50-80/hour and $300 max. Could you let me know whether this is a fit, any availability this week or next, and the best next step?
+
+Please do not book anything yet; I am just checking fit and availability.
+
+Thank you,
+Maggie
+</pre>
+            </article>
+            
+  </main>
+</div>
+</body>
+</html>
