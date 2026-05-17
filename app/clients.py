@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any
 
@@ -172,7 +173,7 @@ async def browser_research(task: dict[str, Any]) -> str:
         from browser_use_sdk.v3 import AsyncBrowserUse
 
         client = AsyncBrowserUse(api_key=settings.browser_use_api_key)
-        result = await client.run(prompt, model="claude-sonnet-4.6")
+        result = await asyncio.wait_for(client.run(prompt, model="claude-sonnet-4.6"), timeout=120)
         output = getattr(result, "output", None) or str(result)
         trace("browser_use.research", "Browser Use research completed", sponsor="Browser Use", task_id=task["id"], payload={"chars": len(output)})
         return output
