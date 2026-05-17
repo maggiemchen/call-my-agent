@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Life Ops Concierge — Execution Packet</title>
+  <style>
+    :root { color-scheme: dark; --bg:#090908; --ink:#f7f0df; --muted:#aaa394; --line:#2c2922; --gold:#d6b05b; --green:#78d99c; --red:#ff7c70; --panel:#11100d; }
+    * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--ink); font-family:Inter, system-ui, sans-serif; }
+    .shell { display:grid; grid-template-columns:280px 1fr; min-height:100vh; }
+    aside { position:sticky; top:0; height:100vh; border-right:1px solid var(--line); padding:28px 22px; background:#0d0c0a; }
+    main { padding:40px clamp(24px, 5vw, 72px) 80px; }
+    h1,h2,h3 { font-family:Newsreader, Georgia, serif; font-weight:500; letter-spacing:0; margin:0; }
+    h1 { font-size:76px; line-height:.9; max-width:900px; } h2 { font-size:34px; margin:54px 0 16px; } h3 { font-size:24px; margin-bottom:10px; }
+    p { color:var(--muted); line-height:1.55; max-width:900px; }
+    .brand { font-family:Newsreader, Georgia, serif; font-size:26px; line-height:1; }
+    nav { display:grid; gap:10px; margin:32px 0; } nav a { color:var(--muted); text-decoration:none; } nav a:hover { color:var(--ink); }
+    .kicker { color:var(--gold); text-transform:uppercase; font-size:12px; letter-spacing:.18em; margin-bottom:16px; }
+    .hero { min-height:60vh; display:flex; flex-direction:column; justify-content:center; border-bottom:1px solid var(--line); }
+    .decision { border:1px solid var(--gold); background:linear-gradient(180deg, rgba(214,176,91,.12), var(--panel)); border-radius:8px; padding:22px; margin-top:28px; max-width:980px; }
+    .decision strong { color:var(--gold); }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+    .card { border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:18px; }
+    .status { display:inline-flex; align-items:center; gap:7px; border:1px solid #3a352a; color:var(--muted); border-radius:999px; padding:4px 9px; font-size:12px; margin:3px 5px 8px 0; }
+    .dot { width:8px; height:8px; border-radius:50%; background:var(--green); } .warn .dot { background:var(--gold); } .bad .dot { background:var(--red); }
+    table { width:100%; border-collapse:collapse; font-size:14px; } td, th { border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; vertical-align:top; } th { color:var(--gold); font-weight:500; }
+    .script { white-space:pre-wrap; border:1px solid var(--line); background:#080807; border-radius:8px; padding:16px; color:#d8d0bd; }
+    .actions { display:grid; gap:10px; margin-top:18px; } .action { border-left:3px solid var(--gold); padding:9px 0 9px 14px; color:var(--ink); }
+    @media (max-width:900px) { .shell,.grid { grid-template-columns:1fr; } aside { position:relative; height:auto; } h1 { font-size:48px; } }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand">Life Ops<br>Concierge</div>
+    <nav>
+      <a href="#approval">Approval</a>
+      <a href="#sf">SF Organization</a>
+      <a href="#japan">48h Japan</a>
+      <a href="#evidence">Evidence</a>
+    </nav>
+    <p>Generated from live AgentPhone, Agentmail, Browser Use, Supermemory, and local execution logs.</p>
+  </aside>
+  <main>
+    <section class="hero" id="approval">
+      <div class="kicker">Real-world execution packet</div>
+      <h1>Two tasks, ready for a yes/no.</h1>
+      <p>This is no longer a fictional demo. Emails have been sent, calls have been placed, closed providers are queued for open hours, and the next step is an approval boundary.</p>
+      <div class="decision">
+        <h3>Approval I Need</h3>
+        <p><strong>SF:</strong> Say “yes to SF plan” and the agent should continue tomorrow during business hours: call queued providers in order, accept the first provider who can do a weekday after 3pm within $300, and stop before any payment/card/deposit.</p>
+        <p><strong>Japan:</strong> Say “yes to Japan plan” and the agent should continue outreach to restaurants/spa/jazz targets, assemble the best 48-hour route from replies, and stop before any reservation requiring card/deposit or fixed commitment.</p>
+      </div>
+    </section>
+
+    <section id="sf">
+      <h2>SF Organization</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Recommendation</h3>
+          <p>Proceed with a multi-provider race. Emails are already out. Phone calls should resume during open hours, prioritizing providers with the best fit and public contact paths.</p>
+          <div class="actions">
+            <div class="action">Accept first provider who can do kitchen + closet organizing, light declutter/cleaning support, weekday after 3pm, and first session <= $300.</div>
+            <div class="action">If provider requires a larger package, ask for a smaller starter session or referral.</div>
+            <div class="action">If payment/card/booking commitment is required, pause for Maggie.</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Call Script</h3>
+          <div class="script">Hi, this is an AI call agent calling on behalf of Maggie. She is looking for help with a 1BR apartment in 94109: kitchen and closet organizing, light declutter, some cleaning support, and possibly healthy meal plan or grocery support. Weekdays after 3pm work best. Her first-session budget is up to $300 at $50-80 per hour. Is this a fit, and what would the next step be? I cannot book or pay without Maggie confirming.</div>
+        </div>
+      </div>
+      <h3>Provider Attempts</h3>
+      <table>
+        <tr><th>Provider</th><th>Email</th><th>Call</th><th>Status</th></tr>
+        <tr><td>NEAT Method SF</td><td>Not sent</td><td>Called</td><td>Voicemail reached; message left. Likely premium / may exceed budget.</td></tr>
+        <tr><td>Artful Organizing SF</td><td>Sent</td><td>Called</td><td>Voicemail reached; message left.</td></tr>
+        <tr><td>Liberated Spaces</td><td>Sent</td><td>Called</td><td>Voicemail reached; Google showed closed / opens Monday 9am.</td></tr>
+        <tr><td>Bay Area Home Organizing</td><td>Sent</td><td>Called</td><td>Human answered then hung up after AI disclosure; email remains open.</td></tr>
+        <tr><td>NEATNIK</td><td>Sent</td><td>No public phone</td><td>Waiting for reply.</td></tr>
+        <tr><td>Clean Lines Home Organizing</td><td>Sent</td><td>Queued</td><td>Deferred until open hours.</td></tr>
+        <tr><td>Cleverly Curated</td><td>Sent</td><td>Queued</td><td>Deferred until open hours.</td></tr>
+        <tr><td>Clean Cozy Home</td><td>Sent</td><td>Queued</td><td>Deferred until open hours.</td></tr>
+        <tr><td>Zenfully Organized</td><td>Sent</td><td>Queued</td><td>Deferred until open hours.</td></tr>
+        <tr><td>Maby's Domestic Services</td><td>No public email captured</td><td>Queued</td><td>Deferred until open hours.</td></tr>
+        <tr><td>ARXA Studio</td><td>Sent</td><td>Queued</td><td>Deferred until open hours.</td></tr>
+      </table>
+    </section>
+
+    <section id="japan">
+      <h2>48 Hours In Japan</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Recommendation</h3>
+          <p>Use a tight west/central Tokyo route: Kichijoji / Nishi-Ogikubo / Nakano for whimsical restaurants and jazz, plus Kagurazaka or Marunouchi/Ginza for a polished recharge block. Avoid broad city-hopping.</p>
+          <div class="actions">
+            <div class="action">Day 1: Kichijoji/Nishi-Ogikubo wander, unusual dinner, Nakano jazz.</div>
+            <div class="action">Day 2: Kagurazaka artful lunch/walk, spa/recharge, hidden dinner or bar.</div>
+            <div class="action">Budget target: keep paid reservations under $1,000 total for two unless Maggie approves otherwise.</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Outreach Status</h3>
+          <span class="status"><span class="dot"></span>Sweet Rain email sent</span>
+          <span class="status"><span class="dot"></span>Bulgari Hotel Tokyo Spa email sent</span>
+          <span class="status warn"><span class="dot"></span>Restaurant phone/email follow-up next</span>
+          <p>These are non-binding availability inquiries only. No reservation, payment, or deposit has been made.</p>
+        </div>
+      </div>
+      <h3>Next Japan Execution Queue</h3>
+      <table>
+        <tr><th>Target</th><th>Channel</th><th>Ask</th><th>Stop Condition</th></tr>
+        <tr><td>Sweet Rain, Nakano</td><td>Email sent</td><td>Two guests, late June or early September, live jazz evening.</td><td>Pause if reservation requires card/deposit.</td></tr>
+        <tr><td>Bulgari Hotel Tokyo Spa</td><td>Email sent</td><td>Two guests, afternoon massage/head spa/recharge, price and non-guest policy.</td><td>Pause if prepayment/card required.</td></tr>
+        <tr><td>Kagurazaka / Nishi-Ogikubo restaurants</td><td>Phone/email next</td><td>Availability for two, unusual/local/non-touristy dinner.</td><td>Pause before confirming fixed booking.</td></tr>
+        <tr><td>Backup jazz / hidden bar</td><td>Phone/email next</td><td>Hours, cover charge, reservation rules.</td><td>Pause if no English/Japanese call support path.</td></tr>
+      </table>
+    </section>
+
+    <section id="evidence">
+      <h2>Evidence</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Live Systems</h3>
+          <span class="status"><span class="dot"></span>AgentPhone calls working</span>
+          <span class="status"><span class="dot"></span>Agentmail sends working</span>
+          <span class="status"><span class="dot"></span>localtunnel webhook working</span>
+          <span class="status"><span class="dot"></span>Supermemory writes working</span>
+          <span class="status"><span class="dot"></span>Browser Use timeout/fallback added</span>
+        </div>
+        <div class="card">
+          <h3>Boundaries</h3>
+          <p>No payments, bookings, card sharing, deposits, or irreversible commitments have been made. Real external outreach has been limited to availability inquiries, voicemail, and email.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
