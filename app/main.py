@@ -66,7 +66,7 @@ async def create_task_api(request: Request) -> dict[str, Any]:
 async def demo_domestic() -> RedirectResponse:
     await create_and_process_task(
         "demo",
-        "Call a highly rated SF home organizer or cleaning helper for a 1BR in 94109. Ask about weekday availability after 3pm, kitchen and closet organizing, light declutter, cleaning, and meal prep support. Budget is $50-80/hour and $300 max right now. Do not book or pay.",
+        "Use TaskRabbit, Thumbtack, Yelp, Google, and public provider sites to find a real highly rated SF home organizer or cleaning helper for a 1BR in 94109. Need weekday availability after 3pm for kitchen and closet organizing, light declutter, cleaning, and healthy meal plan/grocery support. Budget is $50-80/hour and $300 max right now. If a public phone number is found, prepare the first call. Do not book, pay, submit forms, or send messages.",
         "Maggie",
         live=False,
     )
@@ -165,7 +165,7 @@ def render_dashboard() -> str:
         f"<article class='concept {'picked' if c['name'] in picks else ''}'><b>{html.escape(c['name'])}</b><p><strong>Pro:</strong> {html.escape(c['pro'])}</p><p><strong>Con:</strong> {html.escape(c['con'])}</p></article>"
         for c in concepts
     )
-    prompt = "Call 415-555-0199 and ask whether they can help organize a 1BR kitchen and closet in 94109 after 3pm on a weekday. Do not book or pay."
+    prompt = "Use TaskRabbit, Thumbtack, Yelp, Google, and public provider sites to find a real highly rated SF home organizer or cleaning helper for a 1BR in 94109. Need weekday availability after 3pm for kitchen and closet organizing, light declutter, cleaning, and healthy meal plan/grocery support. Budget is $50-80/hour and $300 max right now. If a public phone number is found, prepare the first call. Do not book, pay, submit forms, or send messages."
     latest_json = html.escape(json.dumps(latest, indent=2, default=str)) if latest else "{}"
     return f"""<!doctype html>
 <html lang="en">

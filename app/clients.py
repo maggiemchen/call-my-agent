@@ -145,12 +145,7 @@ async def browser_research(task: dict[str, Any]) -> str:
     if not settings.browser_use_api_key:
         trace("browser_use.skipped", "BROWSER_USE_API_KEY missing", sponsor="Browser Use", ok=False, task_id=task["id"])
         return "Browser Use skipped because no API key was loaded."
-    prompt = (
-        "Research this domestic call task for a phone-call agent. "
-        "Return: likely business/person, phone validity, hours if public, call objective, "
-        "gotchas, and a concise suggested opening. Do not book, message, or submit forms.\n\n"
-        f"Task: {task['request_text']}"
-    )
+    prompt = browser_research_prompt(task)
     try:
         from browser_use_sdk.v3 import AsyncBrowserUse
 
@@ -162,6 +157,38 @@ async def browser_research(task: dict[str, Any]) -> str:
     except Exception as exc:
         trace("browser_use.error", f"Browser Use failed: {exc}", sponsor="Browser Use", ok=False, task_id=task["id"])
         return f"Browser Use failed: {exc}"
+
+
+def browser_research_prompt(task: dict[str, Any]) -> str:
+    text = task["request_text"]
+    if any(term in text.lower() for term in ("taskrabbit", "thumbtack", "yelp", "home organizer", "cleaning helper", "94109", "closet")):
+        return f"""Use Browser Use to do real-world vendor research for this SF life-ops task.
+
+Task:
+{text}
+
+Requirements:
+- Research TaskRabbit, Thumbtack, Yelp, Google/local web results, or public provider sites.
+- Find 3-5 real candidate providers that can plausibly help with a 1BR in 94109.
+- Apply this quality rule where visible: at least 10 reviews and 4.8+ stars, or 50+ reviews and 4.5+ stars.
+- Budget fit: $50-80/hour, $300 max right now.
+- Timing: weekdays after 3pm, not late at night.
+- Scope: kitchen and closet organizing, declutter, light cleaning, healthy meal plan/grocery support.
+- Do not book, pay, submit forms, send messages, or make external commitments.
+
+Return a structured brief in this exact shape:
+1. BEST_CALL_TARGET: provider name, public phone number if found, source URL, why this is the first call.
+2. SHORTLIST: 3-5 providers with rating/review evidence, phone/contact path, source, estimated fit.
+3. MESSAGE_DRAFTS: one natural TaskRabbit/Thumbtack/Yelp message Maggie could send.
+4. CALL_SCRIPT: 45-second opening for an AI call agent calling on Maggie's behalf.
+5. BLOCKERS: anything missing, account/login wall, no phone listed, uncertain reviews, or policy risk.
+"""
+    return (
+        "Research this domestic call task for a phone-call agent. "
+        "Return: likely business/person, phone validity, hours if public, call objective, "
+        "gotchas, and a concise suggested opening. Do not book, message, or submit forms.\n\n"
+        f"Task: {text}"
+    )
 
 
 def initial_greeting(task: dict[str, Any]) -> str:

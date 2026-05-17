@@ -44,6 +44,18 @@ def parse_call_request(text: str) -> dict[str, Any]:
     }
 
 
+def extract_research_call_target(research: str) -> dict[str, str | None]:
+    phone_match = PHONE_RE.search(research)
+    phone = normalize_phone(phone_match.group(1)) if phone_match else None
+    name = None
+    for line in research.splitlines():
+        if "BEST_CALL_TARGET" in line.upper():
+            candidate = re.sub(r"^\s*\d*\.?\s*BEST_CALL_TARGET\s*:?", "", line, flags=re.I).strip(" -:")
+            name = candidate[:120] or None
+            break
+    return {"recipient_phone": phone, "recipient_name": name}
+
+
 async def create_and_process_task(source: str, request_text: str, requester: str | None = None, *, live: bool = False) -> dict[str, Any]:
     parsed = parse_call_request(request_text)
     task_id = create_task(source, request_text, requester, parsed)
@@ -65,20 +77,27 @@ async def process_task(task_id: int, *, live: bool) -> None:
     memory, research = await asyncio.gather(memory_task, research_task)
 
     memory_text = json.dumps(memory, default=str)[:3000] if memory else ""
-    update_task(task_id, status="ready_to_call", research=research, memory=memory_text)
+    target = extract_research_call_target(research)
+    update_fields: dict[str, Any] = {"status": "ready_to_call", "research": research, "memory": memory_text}
+    if target["recipient_phone"] and not task.get("recipient_phone"):
+        update_fields["recipient_phone"] = target["recipient_phone"]
+        update_fields["recipient_name"] = target["recipient_name"] or task.get("recipient_name")
+        trace("task.target.extracted", "Extracted callable target from Browser Use research", task_id=task_id, payload=target)
+    update_task(task_id, **update_fields)
     trace("task.research.completed", "Research attached to task", task_id=task_id, payload={"research_chars": len(research), "has_memory": bool(memory)})
 
     digest = build_digest(get_task(task_id) or task)
     update_task(task_id, digest=digest)
     await memory_client.add(digest, {"project": "agentphone-call-delegator", "task_id": task_id, "kind": "call-task"})
 
-    if live and settings.allow_live_calls and task.get("recipient_phone"):
+    refreshed = get_task(task_id) or task
+    if live and settings.allow_live_calls and refreshed.get("recipient_phone"):
         await start_live_call(task_id)
     else:
         reason = "live disabled"
         if live and not settings.allow_live_calls:
             reason = "ALLOW_LIVE_CALLS is not true"
-        if live and not task.get("recipient_phone"):
+        if live and not refreshed.get("recipient_phone"):
             reason = "no recipient phone parsed"
         update_task(task_id, status="staged_call", call_status=reason)
         trace("call.staged", f"Call staged: {reason}", task_id=task_id, ok=not live)
