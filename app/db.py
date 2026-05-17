@@ -63,6 +63,26 @@ def init_db() -> None:
               channel text,
               payload text not null
             );
+
+            create table if not exists provider_attempts (
+              id integer primary key autoincrement,
+              created_at text not null,
+              updated_at text not null,
+              task_id integer,
+              domain text not null,
+              provider_name text not null,
+              phone text,
+              email text,
+              website text,
+              source_note text,
+              call_task_id integer,
+              call_id text,
+              call_status text,
+              email_status text,
+              outcome text,
+              foreign key(task_id) references tasks(id),
+              foreign key(call_task_id) references tasks(id)
+            );
             """
         )
 
@@ -165,4 +185,79 @@ def list_tasks(limit: int = 20) -> list[dict[str, Any]]:
 def list_events(limit: int = 80) -> list[dict[str, Any]]:
     with connect() as conn:
         rows = conn.execute("select * from events order by id desc limit ?", (limit,)).fetchall()
+    return [dict(row) for row in rows]
+
+
+def upsert_provider_attempt(**fields: Any) -> int:
+    ts = now_iso()
+    provider_name = fields["provider_name"]
+    domain = fields["domain"]
+    with connect() as conn:
+        existing = conn.execute(
+            "select id from provider_attempts where domain = ? and provider_name = ?",
+            (domain, provider_name),
+        ).fetchone()
+        payload = {
+            "updated_at": ts,
+            "task_id": fields.get("task_id"),
+            "domain": domain,
+            "provider_name": provider_name,
+            "phone": fields.get("phone"),
+            "email": fields.get("email"),
+            "website": fields.get("website"),
+            "source_note": fields.get("source_note"),
+            "call_task_id": fields.get("call_task_id"),
+            "call_id": fields.get("call_id"),
+            "call_status": fields.get("call_status"),
+            "email_status": fields.get("email_status"),
+            "outcome": fields.get("outcome"),
+        }
+        if existing:
+            assignments = ", ".join(f"{key} = coalesce(?, {key})" for key in payload)
+            conn.execute(
+                f"update provider_attempts set {assignments} where id = ?",
+                [*payload.values(), existing["id"]],
+            )
+            return int(existing["id"])
+        cur = conn.execute(
+            """
+            insert into provider_attempts(
+              created_at, updated_at, task_id, domain, provider_name, phone, email,
+              website, source_note, call_task_id, call_id, call_status, email_status, outcome
+            )
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                ts,
+                ts,
+                payload["task_id"],
+                payload["domain"],
+                payload["provider_name"],
+                payload["phone"],
+                payload["email"],
+                payload["website"],
+                payload["source_note"],
+                payload["call_task_id"],
+                payload["call_id"],
+                payload["call_status"],
+                payload["email_status"],
+                payload["outcome"],
+            ),
+        )
+        return int(cur.lastrowid)
+
+
+def update_provider_attempt(provider_id: int, **fields: Any) -> None:
+    fields["updated_at"] = now_iso()
+    assignments = ", ".join(f"{key} = ?" for key in fields)
+    with connect() as conn:
+        conn.execute(f"update provider_attempts set {assignments} where id = ?", [*fields.values(), provider_id])
+
+
+def list_provider_attempts(domain: str | None = None, limit: int = 50) -> list[dict[str, Any]]:
+    with connect() as conn:
+        if domain:
+            rows = conn.execute("select * from provider_attempts where domain = ? order by id desc limit ?", (domain, limit)).fetchall()
+        else:
+            rows = conn.execute("select * from provider_attempts order by id desc limit ?", (limit,)).fetchall()
     return [dict(row) for row in rows]
