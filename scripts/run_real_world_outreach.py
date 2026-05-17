@@ -4,6 +4,8 @@ import asyncio
 import json
 import sys
 from pathlib import Path
+from datetime import datetime, time
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -30,6 +32,7 @@ SF_PROVIDERS = [
         "email": "ArtfulOrganizingSf@gmail.com",
         "website": "https://www.artfulorganizingsf.com/services",
         "source_note": "Official site lists San Francisco organizing services, email, and phone.",
+        "call_window": "unknown",
     },
     {
         "name": "Liberated Spaces",
@@ -37,6 +40,7 @@ SF_PROVIDERS = [
         "email": "info@liberatedspaces.com",
         "website": "https://liberatedspaces.com/contact/",
         "source_note": "Official contact page lists complimentary phone assessment, phone, and email.",
+        "call_window": "closed_now_google; opens 9am Monday",
     },
     {
         "name": "NEATNIK",
@@ -44,6 +48,7 @@ SF_PROVIDERS = [
         "email": "info@neatnik.co",
         "website": "https://www.neatnik.co/",
         "source_note": "Official site lists Bay Area home/office organizing and public email.",
+        "call_window": "email_only",
     },
     {
         "name": "Bay Area Home Organizing",
@@ -51,6 +56,7 @@ SF_PROVIDERS = [
         "email": "bahomeorganizing@gmail.com",
         "website": "https://www.bayareahomeorganizing.com/contact",
         "source_note": "Official contact page lists SF Bay service area, 9am-9pm hours, email, and phone.",
+        "call_window": "daily_9_21",
     },
     {
         "name": "Clean Lines Home Organizing",
@@ -58,6 +64,7 @@ SF_PROVIDERS = [
         "email": "info@cleanlinesmarin.com",
         "website": "https://www.cleanlinesmarin.com/contact",
         "source_note": "Official contact page lists Bay Area service, email, and phone.",
+        "call_window": "unknown",
     },
     {
         "name": "Cleverly Curated",
@@ -65,6 +72,7 @@ SF_PROVIDERS = [
         "email": "hello@thecleverlycurated.com",
         "website": "https://www.thecleverlycurated.com/contact",
         "source_note": "Official contact page lists San Francisco and Marin service, email, and phone/text.",
+        "call_window": "unknown",
     },
     {
         "name": "Clean Cozy Home",
@@ -72,6 +80,7 @@ SF_PROVIDERS = [
         "email": "info@cleancozyhome.com",
         "website": "https://www.cleancozyhome.com/",
         "source_note": "Official site lists SF Bay Area home/office cleaning, email, and phone.",
+        "call_window": "unknown",
     },
     {
         "name": "Zenfully Organized",
@@ -79,6 +88,7 @@ SF_PROVIDERS = [
         "email": "info@zenfullyorganized.com",
         "website": "https://www.zenfullyorganized.com/contact-us",
         "source_note": "Official contact page lists Bay Area organizing services, email, and phone.",
+        "call_window": "unknown",
     },
     {
         "name": "Maby's Domestic Services",
@@ -86,6 +96,7 @@ SF_PROVIDERS = [
         "email": None,
         "website": "https://mabysdomesticservice.com/",
         "source_note": "Official site lists SF apartment cleaning, 15+ years experience, and phone.",
+        "call_window": "unknown",
     },
     {
         "name": "ARXA Studio",
@@ -93,6 +104,7 @@ SF_PROVIDERS = [
         "email": "hotmessmethod@gmail.com",
         "website": "https://www.arxastudio.com/contact",
         "source_note": "Official contact page lists SF Bay Area service, email, and phone.",
+        "call_window": "unknown",
     },
 ]
 
@@ -178,6 +190,10 @@ async def call_next_sf_provider() -> None:
         if existing and existing.get("call_id"):
             trace("sf.provider.call_skipped", f"Skipping already-called provider {provider['name']}", task_id=SF_TASK_ID, sponsor="AgentPhone", payload={"call_id": existing.get("call_id"), "call_status": existing.get("call_status")})
             continue
+        if not is_open_for_call(provider):
+            update_provider_attempt(provider_id, call_status="queued_until_open_hours")
+            trace("sf.provider.call_deferred", f"Deferred call to {provider['name']} until open hours", task_id=SF_TASK_ID, sponsor="AgentPhone", payload={"provider": provider["name"], "call_window": provider.get("call_window")})
+            continue
         task_text = call_task_text(provider)
         parsed = parse_call_request(task_text)
         parsed["recipient_name"] = provider["name"]
@@ -205,6 +221,22 @@ def provider_row(name: str) -> dict[str, str] | None:
             (name,),
         ).fetchone()
     return dict(row) if row else None
+
+
+def is_open_for_call(provider: dict[str, str | None]) -> bool:
+    window = provider.get("call_window") or "unknown"
+    now = datetime.now(ZoneInfo("America/Los_Angeles"))
+    current = now.time()
+    if window == "daily_9_21":
+        return time(9, 0) <= current <= time(21, 0)
+    if window == "weekday_9_17":
+        return now.weekday() < 5 and time(9, 0) <= current <= time(17, 0)
+    if window == "email_only":
+        return False
+    if window.startswith("closed_now"):
+        return False
+    # Conservative default: do not cold-call unknown-hours providers outside business days.
+    return now.weekday() < 5 and time(9, 0) <= current <= time(17, 0)
 
 
 async def main() -> None:
