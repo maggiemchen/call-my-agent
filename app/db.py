@@ -150,6 +150,12 @@ def latest_task() -> dict[str, Any] | None:
     return dict(row) if row else None
 
 
+def find_task_by_call_id(call_id: str) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute("select * from tasks where call_id = ? order by id desc limit 1", (call_id,)).fetchone()
+    return dict(row) if row else None
+
+
 def list_tasks(limit: int = 20) -> list[dict[str, Any]]:
     with connect() as conn:
         rows = conn.execute("select * from tasks order by id desc limit ?", (limit,)).fetchall()
