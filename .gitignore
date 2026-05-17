@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Runtime state / traces
+data/
+logs/
+.playwright-mcp/
+*.png
+
+# Local smoke-test leftovers
+.sandbox-check/
+sandbox_check/

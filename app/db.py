@@ -1,0 +1,162 @@
+from __future__ import annotations
+
+import json
+import sqlite3
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+from .config import DATA_DIR, LOG_DIR, settings
+
+
+def now_iso() -> str:
+    return datetime.now(UTC).isoformat()
+
+
+def connect() -> sqlite3.Connection:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(settings.database_path)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db() -> None:
+    with connect() as conn:
+        conn.executescript(
+            """
+            create table if not exists tasks (
+              id integer primary key autoincrement,
+              created_at text not null,
+              updated_at text not null,
+              source text not null,
+              requester text,
+              request_text text not null,
+              recipient_name text,
+              recipient_phone text,
+              objective text,
+              constraints text,
+              status text not null,
+              research text,
+              memory text,
+              call_id text,
+              call_status text,
+              result_summary text,
+              digest text
+            );
+
+            create table if not exists events (
+              id integer primary key autoincrement,
+              created_at text not null,
+              task_id integer,
+              sponsor text,
+              event_type text not null,
+              ok integer not null default 1,
+              message text not null,
+              payload text,
+              foreign key(task_id) references tasks(id)
+            );
+
+            create table if not exists webhooks (
+              id integer primary key autoincrement,
+              created_at text not null,
+              event_name text not null,
+              channel text,
+              payload text not null
+            );
+            """
+        )
+
+
+def trace(event_type: str, message: str, *, task_id: int | None = None, sponsor: str | None = None, ok: bool = True, payload: Any = None) -> None:
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    record = {
+        "at": now_iso(),
+        "event_type": event_type,
+        "task_id": task_id,
+        "sponsor": sponsor,
+        "ok": ok,
+        "message": message,
+        "payload": payload,
+    }
+    with Path(settings.trace_path).open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, default=str, ensure_ascii=False) + "\n")
+    with connect() as conn:
+        conn.execute(
+            """
+            insert into events(created_at, task_id, sponsor, event_type, ok, message, payload)
+            values (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (record["at"], task_id, sponsor, event_type, int(ok), message, json.dumps(payload, default=str) if payload is not None else None),
+        )
+
+
+def create_task(source: str, request_text: str, requester: str | None, parsed: dict[str, Any]) -> int:
+    ts = now_iso()
+    with connect() as conn:
+        cur = conn.execute(
+            """
+            insert into tasks(
+              created_at, updated_at, source, requester, request_text, recipient_name,
+              recipient_phone, objective, constraints, status
+            )
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                ts,
+                ts,
+                source,
+                requester,
+                request_text,
+                parsed.get("recipient_name"),
+                parsed.get("recipient_phone"),
+                parsed.get("objective"),
+                parsed.get("constraints"),
+                "queued",
+            ),
+        )
+        task_id = int(cur.lastrowid)
+    trace("task.created", "Task created", task_id=task_id, payload=parsed)
+    return task_id
+
+
+def update_task(task_id: int, **fields: Any) -> None:
+    if not fields:
+        return
+    fields["updated_at"] = now_iso()
+    assignments = ", ".join(f"{key} = ?" for key in fields)
+    values = list(fields.values())
+    values.append(task_id)
+    with connect() as conn:
+        conn.execute(f"update tasks set {assignments} where id = ?", values)
+
+
+def log_webhook(event_name: str, channel: str | None, payload: dict[str, Any]) -> None:
+    with connect() as conn:
+        conn.execute(
+            "insert into webhooks(created_at, event_name, channel, payload) values (?, ?, ?, ?)",
+            (now_iso(), event_name, channel, json.dumps(payload, default=str)),
+        )
+
+
+def get_task(task_id: int) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute("select * from tasks where id = ?", (task_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def latest_task() -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute("select * from tasks order by id desc limit 1").fetchone()
+    return dict(row) if row else None
+
+
+def list_tasks(limit: int = 20) -> list[dict[str, Any]]:
+    with connect() as conn:
+        rows = conn.execute("select * from tasks order by id desc limit ?", (limit,)).fetchall()
+    return [dict(row) for row in rows]
+
+
+def list_events(limit: int = 80) -> list[dict[str, Any]]:
+    with connect() as conn:
+        rows = conn.execute("select * from events order by id desc limit ?", (limit,)).fetchall()
+    return [dict(row) for row in rows]
