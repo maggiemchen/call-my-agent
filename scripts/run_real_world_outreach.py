@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.clients import AgentPhoneClient, AgentmailClient
 from app.db import (
+    connect,
     create_task,
     get_task,
     init_db,
@@ -43,6 +44,55 @@ SF_PROVIDERS = [
         "email": "info@neatnik.co",
         "website": "https://www.neatnik.co/",
         "source_note": "Official site lists Bay Area home/office organizing and public email.",
+    },
+    {
+        "name": "Bay Area Home Organizing",
+        "phone": "+18587508059",
+        "email": "bahomeorganizing@gmail.com",
+        "website": "https://www.bayareahomeorganizing.com/contact",
+        "source_note": "Official contact page lists SF Bay service area, 9am-9pm hours, email, and phone.",
+    },
+    {
+        "name": "Clean Lines Home Organizing",
+        "phone": "+14159856288",
+        "email": "info@cleanlinesmarin.com",
+        "website": "https://www.cleanlinesmarin.com/contact",
+        "source_note": "Official contact page lists Bay Area service, email, and phone.",
+    },
+    {
+        "name": "Cleverly Curated",
+        "phone": "+14157550094",
+        "email": "hello@thecleverlycurated.com",
+        "website": "https://www.thecleverlycurated.com/contact",
+        "source_note": "Official contact page lists San Francisco and Marin service, email, and phone/text.",
+    },
+    {
+        "name": "Clean Cozy Home",
+        "phone": "+14153401458",
+        "email": "info@cleancozyhome.com",
+        "website": "https://www.cleancozyhome.com/",
+        "source_note": "Official site lists SF Bay Area home/office cleaning, email, and phone.",
+    },
+    {
+        "name": "Zenfully Organized",
+        "phone": "+18183060023",
+        "email": "info@zenfullyorganized.com",
+        "website": "https://www.zenfullyorganized.com/contact-us",
+        "source_note": "Official contact page lists Bay Area organizing services, email, and phone.",
+    },
+    {
+        "name": "Maby's Domestic Services",
+        "phone": "+16509187729",
+        "email": None,
+        "website": "https://mabysdomesticservice.com/",
+        "source_note": "Official site lists SF apartment cleaning, 15+ years experience, and phone.",
+    },
+    {
+        "name": "ARXA Studio",
+        "phone": "+18602359828",
+        "email": "hotmessmethod@gmail.com",
+        "website": "https://www.arxastudio.com/contact",
+        "source_note": "Official contact page lists SF Bay Area service, email, and phone.",
     },
 ]
 
@@ -91,6 +141,10 @@ async def send_sf_emails() -> None:
         )
         if not provider["email"]:
             continue
+        existing = provider_row(provider["name"])
+        if existing and existing.get("email_status") == "sent":
+            trace("sf.provider.email_skipped", f"Skipping already-sent email to {provider['name']}", task_id=SF_TASK_ID, sponsor="Agentmail")
+            continue
         result = await client.send_message(
             inbox_id=inbox_id,
             to=provider["email"],
@@ -120,6 +174,10 @@ async def call_next_sf_provider() -> None:
             website=provider["website"],
             source_note=provider["source_note"],
         )
+        existing = provider_row(provider["name"])
+        if existing and existing.get("call_id"):
+            trace("sf.provider.call_skipped", f"Skipping already-called provider {provider['name']}", task_id=SF_TASK_ID, sponsor="AgentPhone", payload={"call_id": existing.get("call_id"), "call_status": existing.get("call_status")})
+            continue
         task_text = call_task_text(provider)
         parsed = parse_call_request(task_text)
         parsed["recipient_name"] = provider["name"]
@@ -137,6 +195,16 @@ async def call_next_sf_provider() -> None:
         trace("sf.provider.call_started", f"Started SF provider retry call to {provider['name']}", task_id=task_id, sponsor="AgentPhone", payload={"provider": provider["name"], "phone": provider["phone"], "call_id": call_id})
         print(f"CALLED {provider['name']} {provider['phone']} task={task_id} call={call_id}")
         return
+    print("NO_UNCALLED_PHONE_PROVIDERS")
+
+
+def provider_row(name: str) -> dict[str, str] | None:
+    with connect() as conn:
+        row = conn.execute(
+            "select * from provider_attempts where domain = 'sf_chores' and provider_name = ? order by id desc limit 1",
+            (name,),
+        ).fetchone()
+    return dict(row) if row else None
 
 
 async def main() -> None:
