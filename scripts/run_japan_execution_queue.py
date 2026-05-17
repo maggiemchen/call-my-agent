@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.clients import AgentPhoneClient, AgentmailClient
 from app.db import create_task, get_task, init_db, trace, update_task, upsert_provider_attempt
+from app.db import connect
 from app.services import build_digest, parse_call_request
 
 
@@ -147,6 +148,10 @@ async def send_emails() -> None:
         )
         if not target["email"]:
             continue
+        existing = provider_row("japan_48h", target["name"])
+        if existing and existing.get("email_status") == "sent":
+            trace("japan.email_skipped", f"Skipping already-sent Japan email to {target['name']}", sponsor="Agentmail", payload={"target": target["name"], "email": target["email"]})
+            continue
         result = await client.send_message(
             inbox_id=inbox_id,
             to=target["email"],
@@ -215,6 +220,15 @@ def is_open_for_tokyo_call(target: dict[str, str | None]) -> bool:
     if window == "evening_unknown":
         return time(17, 0) <= current <= time(22, 0)
     return now.weekday() < 5 and time(10, 0) <= current <= time(18, 0)
+
+
+def provider_row(domain: str, name: str) -> dict[str, str] | None:
+    with connect() as conn:
+        row = conn.execute(
+            "select * from provider_attempts where domain = ? and provider_name = ? order by id desc limit 1",
+            (domain, name),
+        ).fetchone()
+    return dict(row) if row else None
 
 
 async def main() -> None:
