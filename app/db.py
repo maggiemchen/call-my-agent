@@ -254,6 +254,13 @@ def update_provider_attempt(provider_id: int, **fields: Any) -> None:
         conn.execute(f"update provider_attempts set {assignments} where id = ?", [*fields.values(), provider_id])
 
 
+def update_provider_attempt_by_call_id(call_id: str, **fields: Any) -> None:
+    fields["updated_at"] = now_iso()
+    assignments = ", ".join(f"{key} = ?" for key in fields)
+    with connect() as conn:
+        conn.execute(f"update provider_attempts set {assignments} where call_id = ?", [*fields.values(), call_id])
+
+
 def list_provider_attempts(domain: str | None = None, limit: int = 50) -> list[dict[str, Any]]:
     with connect() as conn:
         if domain:

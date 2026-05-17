@@ -10,7 +10,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Resp
 
 from .clients import AgentPhoneClient, call_system_prompt
 from .config import settings
-from .db import find_task_by_call_id, get_task, init_db, latest_task, list_events, list_tasks, log_webhook, trace, update_task
+from .db import find_task_by_call_id, get_task, init_db, latest_task, list_events, list_tasks, log_webhook, trace, update_provider_attempt_by_call_id, update_task
 from .services import (
     create_and_process_task,
     ensure_agentmail_inbox,
@@ -135,12 +135,27 @@ async def agentphone_webhook(request: Request, background_tasks: BackgroundTasks
         call_id = data.get("callId") or data.get("id")
         task = find_task_by_call_id(call_id) if call_id else latest_task()
         if task:
+            call_status = data.get("disconnectionReason") or data.get("status") or "ended"
             update_task(
                 task["id"],
                 status="completed",
-                call_status=data.get("disconnectionReason") or data.get("status") or "ended",
+                call_status=call_status,
                 result_summary=json.dumps(data, default=str)[:3000],
             )
+            if call_id:
+                update_provider_attempt_by_call_id(
+                    call_id,
+                    call_status=call_status,
+                    outcome=json.dumps(
+                        {
+                            "durationSeconds": data.get("durationSeconds"),
+                            "disconnectionReason": data.get("disconnectionReason"),
+                            "summary": data.get("summary"),
+                            "transcript": data.get("transcript"),
+                        },
+                        default=str,
+                    )[:1000],
+                )
         return JSONResponse({"ok": True})
 
     return JSONResponse({"ok": True})
