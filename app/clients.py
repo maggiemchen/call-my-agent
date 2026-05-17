@@ -140,6 +140,28 @@ class AgentmailClient:
         trace("agentmail.inbox", f"Ensure inbox -> {res.status_code}", sponsor="Agentmail", ok=res.is_success, payload=_redact(body))
         return body if res.is_success else None
 
+    async def send_message(
+        self,
+        *,
+        inbox_id: str,
+        to: str | list[str],
+        subject: str,
+        text: str,
+        labels: list[str] | None = None,
+    ) -> dict[str, Any] | None:
+        if not self.api_key:
+            trace("agentmail.skipped", "AGENTMAIL_API_KEY missing", sponsor="Agentmail", ok=False)
+            return None
+        async with httpx.AsyncClient(timeout=25, follow_redirects=True) as client:
+            res = await client.post(
+                f"{self.base_url}/inboxes/{inbox_id}/messages/send",
+                headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+                json={"to": to, "subject": subject, "text": text, "labels": labels or ["outreach"]},
+            )
+        body = res.json() if res.content else {}
+        trace("agentmail.send", f"Send message -> {res.status_code}", sponsor="Agentmail", ok=res.is_success, payload=_redact({"to": to, "subject": subject, "body": body}))
+        return body if res.is_success else None
+
 
 async def browser_research(task: dict[str, Any]) -> str:
     if not settings.browser_use_api_key:
