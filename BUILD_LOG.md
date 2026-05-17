@@ -44,6 +44,14 @@ This file is the durable handoff for the hackathon MVP. Runtime traces go to
   repository.
 - Railway CLI is available/authenticated, but this directory has no linked
   Railway project.
+- `ALLOW_LIVE_CALLS=true` was enabled for the local app after user approval.
+- Tokyo real-world outreach was sent through Agentmail:
+  - Sweet Rain jazz bar: reservation inquiry for two guests in late June or
+    early September.
+  - Bulgari Hotel Tokyo Spa: spa availability/pricing inquiry for two guests in
+    late June or early September.
+- Agentmail returned SES message IDs and thread IDs for both Tokyo outreach
+  emails.
 
 ## Not Done / Why
 
