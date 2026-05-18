@@ -431,16 +431,28 @@ def render_showcase() -> str:
     nav {{ display:grid; gap:10px; margin:30px 0; }} nav a {{ color:var(--muted); text-decoration:none; }} nav a:hover {{ color:var(--ink); }}
     button,.button {{ border:1px solid #4a4437; background:#16140f; color:var(--ink); padding:12px; border-radius:7px; cursor:pointer; font:inherit; text-align:left; text-decoration:none; width:100%; margin-bottom:10px; }}
     button:hover,.button:hover {{ border-color:var(--gold); transform:translateY(-1px); }}
-    .hero {{ min-height:62vh; display:flex; flex-direction:column; justify-content:center; border-bottom:1px solid var(--line); }}
+    .hero {{ min-height:72vh; display:grid; grid-template-columns:minmax(0,1fr) minmax(360px,.9fr); gap:34px; align-items:center; border-bottom:1px solid var(--line); padding:24px 0 42px; }}
+    .hero-copy p {{ max-width:720px; font-size:18px; }}
     .stats {{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; background:var(--line); margin-top:34px; }}
     .stat {{ background:#0f0e0b; padding:18px; min-height:120px; }} .stat b {{ color:var(--gold); font-size:12px; letter-spacing:.14em; text-transform:uppercase; }} .stat span {{ display:block; font-family:Newsreader, Georgia, serif; font-size:42px; margin-top:14px; }}
+    .machine {{ border:1px solid var(--line); background:#0f0e0b; border-radius:8px; padding:18px; min-height:540px; }}
+    .machine svg {{ width:100%; height:auto; display:block; }}
+    .story {{ display:grid; grid-template-columns:1.05fr .95fr; gap:18px; margin-top:18px; }}
+    .story-card {{ border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:18px; min-height:180px; }}
+    .story-card b {{ color:var(--gold); font-size:12px; letter-spacing:.13em; text-transform:uppercase; }}
+    .story-card strong {{ display:block; font-family:Newsreader, Georgia, serif; font-size:28px; font-weight:500; margin:12px 0 8px; }}
+    .proof-strip {{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:16px; }}
+    .proof {{ border:1px solid var(--line); background:#0f0e0b; border-radius:8px; padding:14px; }}
+    .proof span {{ display:block; font-family:Newsreader, Georgia, serif; font-size:34px; color:var(--ink); margin-top:8px; }}
+    .lane {{ border:1px solid var(--line); background:#0f0e0b; border-radius:8px; padding:18px; margin-top:18px; }}
+    .lane svg {{ width:100%; height:auto; }}
     .grid {{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }} .card {{ border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:20px; }}
     .rail {{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin:24px 0; }} .step {{ border:1px solid var(--line); background:#0f0e0b; border-radius:8px; padding:14px; min-height:118px; }} .step strong {{ color:var(--gold); display:block; margin-bottom:8px; }}
     .done {{ border-color:rgba(120,217,156,.6); }} .waiting {{ border-color:rgba(216,180,95,.65); }}
     table {{ width:100%; border-collapse:collapse; font-size:13px; }} td,th {{ border-bottom:1px solid var(--line); padding:9px 8px; text-align:left; vertical-align:top; }} th {{ color:var(--gold); font-weight:500; }}
     iframe {{ width:100%; height:560px; border:1px solid var(--line); border-radius:8px; background:#fff; }}
     .approval {{ border:1px solid var(--gold); background:linear-gradient(180deg, rgba(216,180,95,.12), var(--panel)); border-radius:8px; padding:22px; }}
-    @media (max-width:900px) {{ .shell,.grid,.stats,.rail {{ grid-template-columns:1fr; }} aside {{ position:relative; height:auto; }} }}
+    @media (max-width:900px) {{ .shell,.grid,.stats,.rail,.hero,.story,.proof-strip {{ grid-template-columns:1fr; }} aside {{ position:relative; height:auto; }} }}
   </style>
 </head>
 <body>
@@ -460,14 +472,90 @@ def render_showcase() -> str:
   </aside>
   <main>
     <section class="hero">
-      <div class="kicker">Hackathon E2E demo</div>
-      <h1>Delegate a life task. Get a yes/no decision.</h1>
-      <p>The demo uses one controlled vendor reply so the full loop completes on stage. Underneath it are real AgentPhone calls, real Agentmail sends, real provider queues, and real webhook outcomes.</p>
-      <div class="stats">
-        <div class="stat"><b>SF emails</b><span>{real_counts['sf_emails']}</span></div>
-        <div class="stat"><b>SF calls</b><span>{real_counts['sf_calls']}</span></div>
-        <div class="stat"><b>Japan emails</b><span>{real_counts['japan_emails']}</span></div>
-        <div class="stat"><b>Japan queued calls</b><span>{real_counts['japan_queued_calls']}</span></div>
+      <div class="hero-copy">
+        <div class="kicker">Hackathon E2E demo</div>
+        <h1>Text the agent. It goes into the real world.</h1>
+        <p>A single SMS becomes browser research, email outreach, phone calls, voicemail handling, hour-aware retries, and finally one clean approval packet: yes/no, not another chore list.</p>
+        <div class="stats">
+          <div class="stat"><b>SF emails</b><span>{real_counts['sf_emails']}</span></div>
+          <div class="stat"><b>SF calls</b><span>{real_counts['sf_calls']}</span></div>
+          <div class="stat"><b>Japan emails</b><span>{real_counts['japan_emails']}</span></div>
+          <div class="stat"><b>Japan queued calls</b><span>{real_counts['japan_queued_calls']}</span></div>
+        </div>
+      </div>
+      <div class="machine" aria-label="Life Ops Concierge execution diagram">
+        <svg viewBox="0 0 760 760" role="img">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#d8b45f"/></marker>
+            <filter id="soft"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity=".35"/></filter>
+          </defs>
+          <rect x="20" y="20" width="720" height="720" rx="18" fill="#0b0a08" stroke="#2a2822"/>
+          <text x="54" y="70" fill="#d8b45f" font-size="16" font-family="Inter, sans-serif" letter-spacing="3">LIVE EXECUTION LOOP</text>
+          <rect x="64" y="120" width="160" height="250" rx="28" fill="#16140f" stroke="#4a4437" filter="url(#soft)"/>
+          <rect x="84" y="150" width="120" height="170" rx="12" fill="#090908" stroke="#2a2822"/>
+          <circle cx="144" cy="340" r="10" fill="#2a2822"/>
+          <text x="104" y="185" fill="#f7f0df" font-size="18">SMS</text>
+          <text x="104" y="218" fill="#aaa394" font-size="14">“Find an organizer</text>
+          <text x="104" y="240" fill="#aaa394" font-size="14">and plan Japan.”</text>
+          <path d="M230 240 C285 240 296 170 350 170" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+          <path d="M230 250 C290 260 304 310 360 330" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+          <path d="M230 260 C292 305 304 470 360 505" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+          <g>
+            <rect x="360" y="120" width="300" height="100" rx="12" fill="#11100d" stroke="#2a2822"/>
+            <text x="386" y="154" fill="#f7f0df" font-size="22" font-family="Georgia, serif">Browser research</text>
+            <text x="386" y="185" fill="#aaa394" font-size="14">TaskRabbit, Yelp, provider sites, hours</text>
+            <circle cx="630" cy="170" r="16" fill="#78d99c"/>
+          </g>
+          <g>
+            <rect x="380" y="280" width="260" height="110" rx="12" fill="#11100d" stroke="#2a2822"/>
+            <text x="406" y="314" fill="#f7f0df" font-size="22" font-family="Georgia, serif">Email fan-out</text>
+            <text x="406" y="346" fill="#aaa394" font-size="14">Agentmail sends exact inquiry text</text>
+            <text x="406" y="370" fill="#d8b45f" font-size="18">{real_counts['sf_emails'] + real_counts['japan_emails']} real emails</text>
+          </g>
+          <g>
+            <rect x="380" y="460" width="260" height="120" rx="12" fill="#11100d" stroke="#2a2822"/>
+            <text x="406" y="494" fill="#f7f0df" font-size="22" font-family="Georgia, serif">Phone calls</text>
+            <text x="406" y="526" fill="#aaa394" font-size="14">AgentPhone calls, voicemails, webhooks</text>
+            <text x="406" y="552" fill="#d8b45f" font-size="18">{real_counts['sf_calls']} real calls placed</text>
+          </g>
+          <path d="M510 220 L510 280" stroke="#d8b45f" stroke-width="3" marker-end="url(#arrow)"/>
+          <path d="M510 390 L510 460" stroke="#d8b45f" stroke-width="3" marker-end="url(#arrow)"/>
+          <rect x="114" y="610" width="520" height="72" rx="12" fill="#1a160f" stroke="#d8b45f"/>
+          <text x="145" y="640" fill="#f7f0df" font-size="24" font-family="Georgia, serif">Approval packet</text>
+          <text x="145" y="665" fill="#aaa394" font-size="14">“Tuesday 4pm, $225. Say YES to proceed.”</text>
+          <path d="M380 560 C300 590 250 600 210 610" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+          <path d="M640 335 C705 370 702 645 635 648" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+        </svg>
+      </div>
+    </section>
+    <section id="story">
+      <h2>The Story Judges Can Follow</h2>
+      <div class="story">
+        <div class="story-card"><b>1. Frictionless entry</b><strong>User texts a vague life task.</strong><p>No app install, no form, no workflow setup. The phone number is the interface.</p></div>
+        <div class="story-card"><b>2. Real-world work</b><strong>The agent opens channels humans use.</strong><p>It researches providers, sends emails, calls phone numbers, leaves voicemails, and respects hours.</p></div>
+        <div class="story-card"><b>3. Controlled E2E proof</b><strong>A demo vendor reply completes the loop live.</strong><p>We do not wait for random businesses to reply on stage, but we show real outbound proof beside the controlled reply.</p></div>
+        <div class="story-card"><b>4. One decision</b><strong>The user gets a yes/no packet.</strong><p>Not “here are twenty tabs.” The output is a recommended next action with price, time, and stop conditions.</p></div>
+      </div>
+      <div class="lane">
+        <svg viewBox="0 0 1100 300" role="img" aria-label="Two workstreams from one SMS">
+          <rect x="20" y="30" width="210" height="90" rx="10" fill="#15130f" stroke="#4a4437"/>
+          <text x="48" y="67" fill="#f7f0df" font-size="24" font-family="Georgia, serif">One SMS</text>
+          <text x="48" y="96" fill="#aaa394" font-size="14">organizer + Japan plan</text>
+          <path d="M235 75 L335 75" stroke="#d8b45f" stroke-width="3" marker-end="url(#arrow2)"/>
+          <path d="M235 75 C285 75 290 210 335 210" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow2)"/>
+          <defs><marker id="arrow2" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d8b45f"/></marker></defs>
+          <rect x="350" y="30" width="300" height="90" rx="10" fill="#11100d" stroke="#2a2822"/>
+          <text x="380" y="64" fill="#f7f0df" font-size="22" font-family="Georgia, serif">SF organization lane</text>
+          <text x="380" y="94" fill="#aaa394" font-size="14">emails sent, calls placed, remaining calls queued</text>
+          <rect x="350" y="165" width="300" height="90" rx="10" fill="#11100d" stroke="#2a2822"/>
+          <text x="380" y="199" fill="#f7f0df" font-size="22" font-family="Georgia, serif">Japan 48-hour lane</text>
+          <text x="380" y="229" fill="#aaa394" font-size="14">restaurants, spa, jazz outreach in flight</text>
+          <path d="M655 75 L775 135" stroke="#d8b45f" stroke-width="3" marker-end="url(#arrow2)"/>
+          <path d="M655 210 L775 150" stroke="#d8b45f" stroke-width="3" marker-end="url(#arrow2)"/>
+          <rect x="790" y="95" width="270" height="90" rx="10" fill="#1a160f" stroke="#d8b45f"/>
+          <text x="820" y="130" fill="#f7f0df" font-size="24" font-family="Georgia, serif">Approval moment</text>
+          <text x="820" y="160" fill="#aaa394" font-size="14">“Say YES, or keep searching.”</text>
+        </svg>
       </div>
     </section>
     <section id="loop">
