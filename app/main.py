@@ -418,7 +418,6 @@ def render_showcase() -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="10">
   <title>Life Ops Concierge Showcase</title>
   <style>
     :root {{ color-scheme: dark; --bg:#080807; --ink:#f7f0df; --muted:#aaa394; --line:#29261f; --gold:#d8b45f; --green:#78d99c; --red:#ff7c70; --panel:#11100d; }}
@@ -426,17 +425,27 @@ def render_showcase() -> str:
     .shell {{ display:grid; grid-template-columns:300px 1fr; min-height:100vh; }}
     aside {{ position:sticky; top:0; height:100vh; border-right:1px solid var(--line); padding:28px 22px; background:rgba(12,11,9,.92); }}
     main {{ padding:42px clamp(24px,5vw,76px) 80px; }}
-    h1,h2,h3 {{ font-family:Newsreader, Georgia, serif; font-weight:500; letter-spacing:0; margin:0; }} h1 {{ font-size:clamp(54px,7vw,104px); line-height:.88; max-width:940px; }} h2 {{ font-size:36px; margin:52px 0 16px; }} h3 {{ font-size:24px; margin-bottom:10px; }}
+    h1,h2,h3 {{ font-family:Newsreader, Georgia, serif; font-weight:500; letter-spacing:0; margin:0; }} h1 {{ font-size:clamp(48px,5.1vw,74px); line-height:.9; max-width:520px; }} h2 {{ font-size:36px; margin:52px 0 16px; }} h3 {{ font-size:24px; margin-bottom:10px; }}
     p {{ color:var(--muted); line-height:1.55; }} .brand {{ font-family:Newsreader, Georgia, serif; font-size:28px; line-height:1; }} .kicker {{ color:var(--gold); text-transform:uppercase; font-size:12px; letter-spacing:.18em; margin-bottom:16px; }}
     nav {{ display:grid; gap:10px; margin:30px 0; }} nav a {{ color:var(--muted); text-decoration:none; }} nav a:hover {{ color:var(--ink); }}
     button,.button {{ border:1px solid #4a4437; background:#16140f; color:var(--ink); padding:12px; border-radius:7px; cursor:pointer; font:inherit; text-align:left; text-decoration:none; width:100%; margin-bottom:10px; }}
     button:hover,.button:hover {{ border-color:var(--gold); transform:translateY(-1px); }}
-    .hero {{ min-height:72vh; display:grid; grid-template-columns:minmax(0,1fr) minmax(360px,.9fr); gap:34px; align-items:center; border-bottom:1px solid var(--line); padding:24px 0 42px; }}
+    .hero {{ min-height:72vh; display:grid; grid-template-columns:minmax(0,440px) minmax(0,1fr); gap:24px; align-items:center; border-bottom:1px solid var(--line); padding:24px 0 42px; }}
     .hero-copy p {{ max-width:720px; font-size:18px; }}
+    .hero-copy,.machine {{ min-width:0; }}
     .stats {{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; background:var(--line); margin-top:34px; }}
     .stat {{ background:#0f0e0b; padding:18px; min-height:120px; }} .stat b {{ color:var(--gold); font-size:12px; letter-spacing:.14em; text-transform:uppercase; }} .stat span {{ display:block; font-family:Newsreader, Georgia, serif; font-size:42px; margin-top:14px; }}
-    .machine {{ border:1px solid var(--line); background:#0f0e0b; border-radius:8px; padding:18px; min-height:540px; }}
+    .machine {{ border:1px solid var(--line); background:#0f0e0b; border-radius:8px; padding:18px; min-height:540px; width:100%; max-width:540px; justify-self:start; }}
     .machine svg {{ width:100%; height:auto; display:block; }}
+    .node {{ transition:opacity .28s ease, transform .28s ease, filter .28s ease; transform-origin:center; }}
+    .node.dim {{ opacity:.3; }} .node.active {{ filter:drop-shadow(0 0 16px rgba(216,180,95,.75)); transform:scale(1.025); }}
+    .pathline {{ stroke-dasharray:7 10; animation:flow 1.1s linear infinite; }}
+    @keyframes flow {{ to {{ stroke-dashoffset:-34; }} }}
+    .player {{ margin-top:24px; border:1px solid var(--line); background:#0f0e0b; border-radius:8px; padding:18px; max-width:900px; }}
+    .player-top {{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }}
+    .player-controls {{ display:flex; gap:10px; flex-wrap:wrap; }} .player-controls button {{ width:auto; min-width:92px; margin:0; }}
+    .progress {{ height:6px; background:#222018; border-radius:999px; overflow:hidden; margin:16px 0; }} .progress span {{ display:block; width:20%; height:100%; background:var(--gold); transition:width .25s ease; }}
+    .caption {{ display:grid; grid-template-columns:130px 1fr; gap:14px; align-items:start; }} .caption b {{ color:var(--gold); text-transform:uppercase; letter-spacing:.14em; font-size:12px; }} .caption strong {{ display:block; font-family:Newsreader, Georgia, serif; font-size:30px; font-weight:500; margin-bottom:6px; }}
     .story {{ display:grid; grid-template-columns:1.05fr .95fr; gap:18px; margin-top:18px; }}
     .story-card {{ border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:18px; min-height:180px; }}
     .story-card b {{ color:var(--gold); font-size:12px; letter-spacing:.13em; text-transform:uppercase; }}
@@ -491,28 +500,30 @@ def render_showcase() -> str:
           </defs>
           <rect x="20" y="20" width="720" height="720" rx="18" fill="#0b0a08" stroke="#2a2822"/>
           <text x="54" y="70" fill="#d8b45f" font-size="16" font-family="Inter, sans-serif" letter-spacing="3">LIVE EXECUTION LOOP</text>
-          <rect x="64" y="120" width="160" height="250" rx="28" fill="#16140f" stroke="#4a4437" filter="url(#soft)"/>
-          <rect x="84" y="150" width="120" height="170" rx="12" fill="#090908" stroke="#2a2822"/>
-          <circle cx="144" cy="340" r="10" fill="#2a2822"/>
-          <text x="104" y="185" fill="#f7f0df" font-size="18">SMS</text>
-          <text x="104" y="218" fill="#aaa394" font-size="14">“Find an organizer</text>
-          <text x="104" y="240" fill="#aaa394" font-size="14">and plan Japan.”</text>
-          <path d="M230 240 C285 240 296 170 350 170" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
-          <path d="M230 250 C290 260 304 310 360 330" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
-          <path d="M230 260 C292 305 304 470 360 505" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
-          <g>
+          <g class="node" data-stage="0">
+            <rect x="64" y="120" width="160" height="250" rx="28" fill="#16140f" stroke="#4a4437" filter="url(#soft)"/>
+            <rect x="84" y="150" width="120" height="170" rx="12" fill="#090908" stroke="#2a2822"/>
+            <circle cx="144" cy="340" r="10" fill="#2a2822"/>
+            <text x="104" y="185" fill="#f7f0df" font-size="18">SMS</text>
+            <text x="104" y="218" fill="#aaa394" font-size="14">“Find an organizer</text>
+            <text x="104" y="240" fill="#aaa394" font-size="14">and plan Japan.”</text>
+          </g>
+          <path class="pathline" d="M230 240 C285 240 296 170 350 170" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+          <path class="pathline" d="M230 250 C290 260 304 310 360 330" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+          <path class="pathline" d="M230 260 C292 305 304 470 360 505" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+          <g class="node" data-stage="1">
             <rect x="360" y="120" width="300" height="100" rx="12" fill="#11100d" stroke="#2a2822"/>
             <text x="386" y="154" fill="#f7f0df" font-size="22" font-family="Georgia, serif">Browser research</text>
             <text x="386" y="185" fill="#aaa394" font-size="14">TaskRabbit, Yelp, provider sites, hours</text>
             <circle cx="630" cy="170" r="16" fill="#78d99c"/>
           </g>
-          <g>
+          <g class="node" data-stage="2">
             <rect x="380" y="280" width="260" height="110" rx="12" fill="#11100d" stroke="#2a2822"/>
             <text x="406" y="314" fill="#f7f0df" font-size="22" font-family="Georgia, serif">Email fan-out</text>
             <text x="406" y="346" fill="#aaa394" font-size="14">Agentmail sends exact inquiry text</text>
             <text x="406" y="370" fill="#d8b45f" font-size="18">{real_counts['sf_emails'] + real_counts['japan_emails']} real emails</text>
           </g>
-          <g>
+          <g class="node" data-stage="3">
             <rect x="380" y="460" width="260" height="120" rx="12" fill="#11100d" stroke="#2a2822"/>
             <text x="406" y="494" fill="#f7f0df" font-size="22" font-family="Georgia, serif">Phone calls</text>
             <text x="406" y="526" fill="#aaa394" font-size="14">AgentPhone calls, voicemails, webhooks</text>
@@ -520,12 +531,29 @@ def render_showcase() -> str:
           </g>
           <path d="M510 220 L510 280" stroke="#d8b45f" stroke-width="3" marker-end="url(#arrow)"/>
           <path d="M510 390 L510 460" stroke="#d8b45f" stroke-width="3" marker-end="url(#arrow)"/>
-          <rect x="114" y="610" width="520" height="72" rx="12" fill="#1a160f" stroke="#d8b45f"/>
-          <text x="145" y="640" fill="#f7f0df" font-size="24" font-family="Georgia, serif">Approval packet</text>
-          <text x="145" y="665" fill="#aaa394" font-size="14">“Tuesday 4pm, $225. Say YES to proceed.”</text>
+          <g class="node" data-stage="4">
+            <rect x="114" y="610" width="520" height="72" rx="12" fill="#1a160f" stroke="#d8b45f"/>
+            <text x="145" y="640" fill="#f7f0df" font-size="24" font-family="Georgia, serif">Approval packet</text>
+            <text x="145" y="665" fill="#aaa394" font-size="14">“Tuesday 4pm, $225. Say YES to proceed.”</text>
+          </g>
           <path d="M380 560 C300 590 250 600 210 610" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
           <path d="M640 335 C705 370 702 645 635 648" stroke="#d8b45f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
         </svg>
+      </div>
+    </section>
+    <section id="player" class="player">
+      <div class="player-top">
+        <div class="kicker">Interactive demo player</div>
+        <div class="player-controls">
+          <button type="button" id="prevStage">Back</button>
+          <button type="button" id="playStage">Play</button>
+          <button type="button" id="nextStage">Next</button>
+        </div>
+      </div>
+      <div class="progress"><span id="stageProgress"></span></div>
+      <div class="caption">
+        <b id="stageLabel">Step 1</b>
+        <div><strong id="stageTitle">Text the task</strong><p id="stageBody">Maggie sends one plain-English SMS. No app, no form, no workflow builder.</p></div>
       </div>
     </section>
     <section id="story">
@@ -596,6 +624,47 @@ def render_showcase() -> str:
     </section>
   </main>
 </div>
+<script>
+  const stages = [
+    ["Step 1", "Text the task", "Maggie sends one plain-English SMS. No app, no form, no workflow builder."],
+    ["Step 2", "Research the real world", "The agent researches providers, hours, pricing constraints, public phones, and contact paths."],
+    ["Step 3", "Email fan-out", "Agentmail sends real non-binding inquiries. The ledger below shows exact recipients and exact copy."],
+    ["Step 4", "Phone calls", "AgentPhone calls real providers, handles voicemail, logs transcripts, and defers closed businesses."],
+    ["Step 5", "Ask for approval", "The user receives one yes/no decision packet instead of a pile of tabs and follow-ups."]
+  ];
+  let stage = 0;
+  let timer = null;
+  const nodes = [...document.querySelectorAll(".node[data-stage]")];
+  const label = document.getElementById("stageLabel");
+  const title = document.getElementById("stageTitle");
+  const body = document.getElementById("stageBody");
+  const bar = document.getElementById("stageProgress");
+  function setStage(next) {{
+    stage = (next + stages.length) % stages.length;
+    nodes.forEach(node => {{
+      const active = Number(node.dataset.stage) === stage;
+      node.classList.toggle("active", active);
+      node.classList.toggle("dim", !active);
+    }});
+    label.textContent = stages[stage][0];
+    title.textContent = stages[stage][1];
+    body.textContent = stages[stage][2];
+    bar.style.width = `${{((stage + 1) / stages.length) * 100}}%`;
+  }}
+  document.getElementById("prevStage").addEventListener("click", () => setStage(stage - 1));
+  document.getElementById("nextStage").addEventListener("click", () => setStage(stage + 1));
+  document.getElementById("playStage").addEventListener("click", event => {{
+    if (timer) {{
+      clearInterval(timer);
+      timer = null;
+      event.currentTarget.textContent = "Play";
+      return;
+    }}
+    event.currentTarget.textContent = "Pause";
+    timer = setInterval(() => setStage(stage + 1), 1700);
+  }});
+  setStage(0);
+</script>
 </body>
 </html>"""
 
