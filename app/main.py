@@ -6,11 +6,26 @@ from typing import Any
 
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
 
 from .clients import AgentPhoneClient, call_system_prompt
 from .config import settings
-from .db import find_task_by_call_id, get_task, init_db, latest_task, list_events, list_tasks, log_webhook, trace, update_provider_attempt_by_call_id, update_task
+from .db import (
+    create_demo_run,
+    find_task_by_call_id,
+    get_task,
+    init_db,
+    latest_demo_run,
+    latest_task,
+    list_events,
+    list_provider_attempts,
+    list_tasks,
+    log_webhook,
+    trace,
+    update_demo_run,
+    update_provider_attempt_by_call_id,
+    update_task,
+)
 from .services import (
     create_and_process_task,
     ensure_agentmail_inbox,
@@ -40,9 +55,70 @@ async def favicon() -> Response:
     return Response(status_code=204)
 
 
+@app.get("/artifacts/{filename}", include_in_schema=False)
+async def artifact_file(filename: str) -> FileResponse:
+    return FileResponse(f"artifacts/{filename}")
+
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard() -> str:
     return render_dashboard()
+
+
+@app.get("/showcase", response_class=HTMLResponse)
+async def showcase() -> str:
+    return render_showcase()
+
+
+@app.post("/demo/e2e/start")
+async def demo_e2e_start() -> RedirectResponse:
+    create_demo_run(
+        "Find someone to organize my 1BR in 94109. Kitchen and closet, weekdays after 3pm, $300 max. Also build a 48-hour Tokyo plan with jazz, unusual dinner, and spa. Don't book without asking me."
+    )
+    return RedirectResponse("/showcase", status_code=303)
+
+
+@app.post("/demo/e2e/reply")
+async def demo_e2e_reply() -> RedirectResponse:
+    demo = latest_demo_run()
+    if not demo:
+        create_demo_run("Demo task")
+        demo = latest_demo_run()
+    vendor_reply = (
+        "Clean Lines Home Organizing replied: Tuesday 4pm works. "
+        "$75/hour, 3-hour starter session, kitchen + closet focus is a fit. "
+        "They can add light declutter support; no payment needed until Maggie confirms."
+    )
+    packet = (
+        "Approval packet: Recommend Clean Lines for Tuesday 4pm, $225 estimated total. "
+        "Continue Japan outreach while waiting for Sweet Rain / Sushi Shutatsu / spa replies. "
+        "Say YES to approve the Clean Lines booking request; say NO to keep searching."
+    )
+    update_demo_run(
+        demo["id"],
+        status="approval_ready",
+        research_status="real providers researched",
+        email_status="vendor replied in controlled inbox",
+        vendor_reply=vendor_reply,
+        approval_packet=packet,
+    )
+    trace("demo.vendor_reply", "Controlled vendor reply received", payload={"demo_id": demo["id"], "vendor_reply": vendor_reply})
+    return RedirectResponse("/showcase", status_code=303)
+
+
+@app.post("/demo/e2e/call")
+async def demo_e2e_call() -> RedirectResponse:
+    demo = latest_demo_run()
+    if not demo:
+        create_demo_run("Demo task")
+        demo = latest_demo_run()
+    update_demo_run(
+        demo["id"],
+        status="approval_ready",
+        call_status="controlled receptionist call completed; provider can do Tuesday 4pm",
+    )
+    trace("demo.call_completed", "Controlled call completed with viable appointment option", payload={"demo_id": demo["id"]})
+    return RedirectResponse("/showcase", status_code=303)
 
 
 @app.post("/tasks")
@@ -301,6 +377,139 @@ def render_task(task: dict[str, Any]) -> str:
     <form method="post" action="/agentphone/web-call?task_id={task['id']}"><button>Mint Browser Voice Call</button></form>
   </div>
 </article>"""
+
+
+def render_showcase() -> str:
+    init_db()
+    demo = latest_demo_run()
+    sf = list_provider_attempts("sf_chores", 30)
+    japan = list_provider_attempts("japan_48h", 30)
+    events = list_events(12)
+    demo_status = demo or {
+        "status": "not_started",
+        "task_text": "No controlled run started yet.",
+        "sms_status": "pending",
+        "research_status": "pending",
+        "email_status": "pending",
+        "call_status": "pending",
+        "vendor_reply": "",
+        "approval_packet": "",
+    }
+    real_counts = {
+        "sf_emails": sum(1 for p in sf if p.get("email_status") == "sent"),
+        "sf_calls": sum(1 for p in sf if p.get("call_id")),
+        "japan_emails": sum(1 for p in japan if p.get("email_status") == "sent"),
+        "japan_queued_calls": sum(1 for p in japan if p.get("call_status")),
+    }
+    sf_rows = "".join(
+        f"<tr><td>{html.escape(p['provider_name'])}</td><td>{html.escape(p.get('email_status') or '-')}</td><td>{html.escape(p.get('call_status') or '-')}</td><td>{html.escape((p.get('outcome') or '')[:160])}</td></tr>"
+        for p in sf
+    )
+    japan_rows = "".join(
+        f"<tr><td>{html.escape(p['provider_name'])}</td><td>{html.escape(p.get('email_status') or '-')}</td><td>{html.escape(p.get('call_status') or '-')}</td><td>{html.escape((p.get('outcome') or '')[:160])}</td></tr>"
+        for p in japan
+    )
+    event_rows = "".join(
+        f"<tr><td>{html.escape(e['created_at'][11:19])}</td><td>{html.escape(e.get('sponsor') or 'System')}</td><td>{html.escape(e['event_type'])}</td><td>{html.escape(e['message'])}</td></tr>"
+        for e in events
+    )
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="10">
+  <title>Life Ops Concierge Showcase</title>
+  <style>
+    :root {{ color-scheme: dark; --bg:#080807; --ink:#f7f0df; --muted:#aaa394; --line:#29261f; --gold:#d8b45f; --green:#78d99c; --red:#ff7c70; --panel:#11100d; }}
+    * {{ box-sizing:border-box; }} body {{ margin:0; background:radial-gradient(circle at 80% 10%, rgba(216,180,95,.14), transparent 24rem), var(--bg); color:var(--ink); font-family:Inter, system-ui, sans-serif; }}
+    .shell {{ display:grid; grid-template-columns:300px 1fr; min-height:100vh; }}
+    aside {{ position:sticky; top:0; height:100vh; border-right:1px solid var(--line); padding:28px 22px; background:rgba(12,11,9,.92); }}
+    main {{ padding:42px clamp(24px,5vw,76px) 80px; }}
+    h1,h2,h3 {{ font-family:Newsreader, Georgia, serif; font-weight:500; letter-spacing:0; margin:0; }} h1 {{ font-size:clamp(54px,7vw,104px); line-height:.88; max-width:940px; }} h2 {{ font-size:36px; margin:52px 0 16px; }} h3 {{ font-size:24px; margin-bottom:10px; }}
+    p {{ color:var(--muted); line-height:1.55; }} .brand {{ font-family:Newsreader, Georgia, serif; font-size:28px; line-height:1; }} .kicker {{ color:var(--gold); text-transform:uppercase; font-size:12px; letter-spacing:.18em; margin-bottom:16px; }}
+    nav {{ display:grid; gap:10px; margin:30px 0; }} nav a {{ color:var(--muted); text-decoration:none; }} nav a:hover {{ color:var(--ink); }}
+    button,.button {{ border:1px solid #4a4437; background:#16140f; color:var(--ink); padding:12px; border-radius:7px; cursor:pointer; font:inherit; text-align:left; text-decoration:none; width:100%; margin-bottom:10px; }}
+    button:hover,.button:hover {{ border-color:var(--gold); transform:translateY(-1px); }}
+    .hero {{ min-height:62vh; display:flex; flex-direction:column; justify-content:center; border-bottom:1px solid var(--line); }}
+    .stats {{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; background:var(--line); margin-top:34px; }}
+    .stat {{ background:#0f0e0b; padding:18px; min-height:120px; }} .stat b {{ color:var(--gold); font-size:12px; letter-spacing:.14em; text-transform:uppercase; }} .stat span {{ display:block; font-family:Newsreader, Georgia, serif; font-size:42px; margin-top:14px; }}
+    .grid {{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }} .card {{ border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:20px; }}
+    .rail {{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin:24px 0; }} .step {{ border:1px solid var(--line); background:#0f0e0b; border-radius:8px; padding:14px; min-height:118px; }} .step strong {{ color:var(--gold); display:block; margin-bottom:8px; }}
+    .done {{ border-color:rgba(120,217,156,.6); }} .waiting {{ border-color:rgba(216,180,95,.65); }}
+    table {{ width:100%; border-collapse:collapse; font-size:13px; }} td,th {{ border-bottom:1px solid var(--line); padding:9px 8px; text-align:left; vertical-align:top; }} th {{ color:var(--gold); font-weight:500; }}
+    iframe {{ width:100%; height:560px; border:1px solid var(--line); border-radius:8px; background:#fff; }}
+    .approval {{ border:1px solid var(--gold); background:linear-gradient(180deg, rgba(216,180,95,.12), var(--panel)); border-radius:8px; padding:22px; }}
+    @media (max-width:900px) {{ .shell,.grid,.stats,.rail {{ grid-template-columns:1fr; }} aside {{ position:relative; height:auto; }} }}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand">Life Ops<br>Concierge</div>
+    <nav>
+      <a href="#loop">Live Loop</a>
+      <a href="#proof">Real Proof</a>
+      <a href="#approval">Approval</a>
+      <a href="#ledger">Email Ledger</a>
+    </nav>
+    <form method="post" action="/demo/e2e/start"><button>1. Simulate SMS Entry</button></form>
+    <form method="post" action="/demo/e2e/reply"><button>2. Simulate Vendor Reply</button></form>
+    <form method="post" action="/demo/e2e/call"><button>3. Simulate Live Call Result</button></form>
+    <a class="button" href="/">Operator Console</a>
+  </aside>
+  <main>
+    <section class="hero">
+      <div class="kicker">Hackathon E2E demo</div>
+      <h1>Delegate a life task. Get a yes/no decision.</h1>
+      <p>The demo uses one controlled vendor reply so the full loop completes on stage. Underneath it are real AgentPhone calls, real Agentmail sends, real provider queues, and real webhook outcomes.</p>
+      <div class="stats">
+        <div class="stat"><b>SF emails</b><span>{real_counts['sf_emails']}</span></div>
+        <div class="stat"><b>SF calls</b><span>{real_counts['sf_calls']}</span></div>
+        <div class="stat"><b>Japan emails</b><span>{real_counts['japan_emails']}</span></div>
+        <div class="stat"><b>Japan queued calls</b><span>{real_counts['japan_queued_calls']}</span></div>
+      </div>
+    </section>
+    <section id="loop">
+      <h2>Live Loop</h2>
+      <div class="rail">
+        <div class="step done"><strong>SMS</strong>{html.escape(demo_status.get('sms_status') or 'pending')}</div>
+        <div class="step done"><strong>Research</strong>{html.escape(demo_status.get('research_status') or 'real provider rails ready')}</div>
+        <div class="step done"><strong>Email</strong>{html.escape(demo_status.get('email_status') or 'real sends logged')}</div>
+        <div class="step done"><strong>Call</strong>{html.escape(demo_status.get('call_status') or 'real calls logged')}</div>
+        <div class="step waiting"><strong>Approval</strong>{html.escape(demo_status.get('status') or 'waiting')}</div>
+      </div>
+      <div class="grid">
+        <div class="card"><h3>Task</h3><p>{html.escape(demo_status.get('task_text') or '')}</p></div>
+        <div class="approval"><h3>Approval Packet</h3><p>{html.escape(demo_status.get('approval_packet') or 'Click “Simulate Vendor Reply” to show the yes/no decision moment.')}</p><p>{html.escape(demo_status.get('vendor_reply') or '')}</p></div>
+      </div>
+    </section>
+    <section id="proof">
+      <h2>Real Proof</h2>
+      <div class="grid">
+        <div class="card"><h3>SF Provider Queue</h3><table><tr><th>Provider</th><th>Email</th><th>Call</th><th>Outcome</th></tr>{sf_rows}</table></div>
+        <div class="card"><h3>Japan Provider Queue</h3><table><tr><th>Target</th><th>Email</th><th>Call</th><th>Outcome</th></tr>{japan_rows}</table></div>
+      </div>
+    </section>
+    <section id="approval">
+      <h2>What The User Sees</h2>
+      <div class="approval">
+        <h3>Say yes/no</h3>
+        <p>“I found one viable option: Tuesday 4pm, $75/hr, 3-hour starter session, total $225. I also have Japan dinner/spa/jazz outreach in flight. Say YES to proceed with this organizer, NO to keep searching.”</p>
+      </div>
+    </section>
+    <section id="ledger">
+      <h2>Sent Email Ledger</h2>
+      <iframe src="/artifacts/2026-05-17-sent-outreach-ledger.html"></iframe>
+    </section>
+    <section>
+      <h2>Recent Events</h2>
+      <table><tr><th>Time</th><th>Sponsor</th><th>Event</th><th>Message</th></tr>{event_rows}</table>
+    </section>
+  </main>
+</div>
+</body>
+</html>"""
 
 
 def main() -> None:

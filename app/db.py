@@ -83,6 +83,21 @@ def init_db() -> None:
               foreign key(task_id) references tasks(id),
               foreign key(call_task_id) references tasks(id)
             );
+
+            create table if not exists demo_runs (
+              id integer primary key autoincrement,
+              created_at text not null,
+              updated_at text not null,
+              task_text text not null,
+              status text not null,
+              sms_status text,
+              research_status text,
+              email_status text,
+              call_status text,
+              vendor_reply text,
+              approval_packet text,
+              approved_action text
+            );
             """
         )
 
@@ -268,3 +283,34 @@ def list_provider_attempts(domain: str | None = None, limit: int = 50) -> list[d
         else:
             rows = conn.execute("select * from provider_attempts order by id desc limit ?", (limit,)).fetchall()
     return [dict(row) for row in rows]
+
+
+def create_demo_run(task_text: str) -> int:
+    ts = now_iso()
+    with connect() as conn:
+        cur = conn.execute(
+            """
+            insert into demo_runs(
+              created_at, updated_at, task_text, status, sms_status, research_status,
+              email_status, call_status, vendor_reply, approval_packet, approved_action
+            )
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (ts, ts, task_text, "task_received", "SMS received", "pending", "pending", "pending", None, None, None),
+        )
+    demo_id = int(cur.lastrowid)
+    trace("demo.sms_received", "Controlled demo task received by SMS", payload={"demo_id": demo_id, "task_text": task_text})
+    return demo_id
+
+
+def update_demo_run(demo_id: int, **fields: Any) -> None:
+    fields["updated_at"] = now_iso()
+    assignments = ", ".join(f"{key} = ?" for key in fields)
+    with connect() as conn:
+        conn.execute(f"update demo_runs set {assignments} where id = ?", [*fields.values(), demo_id])
+
+
+def latest_demo_run() -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute("select * from demo_runs order by id desc limit 1").fetchone()
+    return dict(row) if row else None
